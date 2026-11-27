@@ -4,6 +4,7 @@ import type { DateRangePickerProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateRange, CalendarDateValue, CalendarModelValue } from "../calendar";
 import { computed, useId, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails as createDetails, resolveAction } from "../../utils/changeEvent";
 import Calendar from "../calendar/Calendar.vue";
@@ -225,6 +226,7 @@ watch(openModel, (open) => {
 }, { flush: "post" });
 
 defineExpose({ clear, close, focusEnd: () => fieldRef.value?.focusEnd(), focusStart: () => fieldRef.value?.focusStart(), open, toggle });
+const activation = useActivation();
 </script>
 
 <template>
@@ -267,6 +269,7 @@ defineExpose({ clear, close, focusEnd: () => fieldRef.value?.focusEnd(), focusSt
       :data-akaza-state="state"
       :data-akaza-disabled="disabled || undefined"
       class="akaza-date-range-picker-trigger"
+      @pointerdown="activation.onPointerDown($event, event => toggle(event))"
       @click="toggle"
     >
       <slot name="trigger" :is-open="openModel" :open="open" :close="close" :toggle="toggle">
@@ -314,6 +317,7 @@ defineExpose({ clear, close, focusEnd: () => fieldRef.value?.focusEnd(), focusSt
           :aria-label="closeLabel || 'Close calendar'"
           :class="ui?.close"
           class="akaza-date-range-picker-close"
+          @pointerdown="activation.onPointerDown($event, event => close(event))"
           @click="close"
         >
           <slot name="close" :close="close">{{ closeLabel || "Close" }}</slot>

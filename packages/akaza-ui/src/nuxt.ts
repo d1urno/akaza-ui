@@ -1,6 +1,7 @@
 import { addComponent, defineNuxtModule } from "@nuxt/kit";
 
 const COMPONENTS: Array<{ name: string; export: string }> = [
+  { name: "AkazaConfigProvider", export: "AkazaConfigProvider" },
   { name: "Accordion", export: "Accordion" },
   { name: "AlertDialog", export: "AlertDialog" },
   { name: "AppLayout", export: "AppLayout" },

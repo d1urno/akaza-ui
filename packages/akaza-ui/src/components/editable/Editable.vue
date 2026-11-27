@@ -3,6 +3,7 @@ import type { EditableProps, EditableState } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useInlineEdit } from "../../composables/internal/sdk/useInlineEdit";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -239,6 +240,7 @@ onMounted(() => {
   if (startWithEditMode) focusInput();
 });
 onUpdated(updateValidity);
+const activation = useActivation();
 </script>
 
 <template>
@@ -284,7 +286,7 @@ onUpdated(updateValidity);
         class="akaza-editable-preview"
         data-akaza-state="preview"
         :data-akaza-empty="isEmpty || undefined"
-        @pointerdown="onPreviewPointerDown"
+        @pointerdown="onPreviewPointerDown($event); activation.onPointerDown($event, event => activationMode === 'click' && edit(event))"
         @click="activationMode === 'click' && edit($event)"
         @dblclick="activationMode === 'dblclick' && edit($event)"
         @focus="activationMode === 'focus' && edit($event)"
@@ -330,6 +332,7 @@ onUpdated(updateValidity);
         :disabled="isDisabled || readOnly"
         :class="ui?.edit"
         class="akaza-editable-edit"
+        @pointerdown="activation.onPointerDown($event, event => edit(event))"
         @click="edit($event)"
       >
         <slot name="edit">Edit</slot>
@@ -340,6 +343,7 @@ onUpdated(updateValidity);
           :disabled="isDisabled || readOnly"
           :class="ui?.submit"
           class="akaza-editable-submit"
+          @pointerdown="activation.onPointerDown($event, event => submit(event))"
           @click="submit($event)"
         >
           <slot name="submit">Submit</slot>
@@ -349,6 +353,7 @@ onUpdated(updateValidity);
           :disabled="isDisabled"
           :class="ui?.cancel"
           class="akaza-editable-cancel"
+          @pointerdown="activation.onPointerDown($event, event => cancel(event))"
           @click="cancel($event)"
         >
           <slot name="cancel">Cancel</slot>

@@ -1,0 +1,23 @@
+name: Activation policy
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  activation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter akaza-ui check:activation
+      - run: pnpm --filter akaza-ui exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm --filter akaza-ui test:activation

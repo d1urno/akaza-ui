@@ -21,6 +21,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { PaginationUi } from "../pagination";
 import { bindDrag } from "@ui-sdk/core";
 import { computed, onBeforeUnmount, useAttrs, useId, useSlots } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useDataTable } from "../../composables/data-table";
 import { createChangeDetails as changeDetails } from "../../utils/changeEvent";
 import { Pagination } from "../pagination";
@@ -360,6 +361,7 @@ defineExpose({
   setPage: table.setPage,
   setPageSize: table.setPageSize,
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -442,6 +444,7 @@ defineExpose({
                       :aria-label="labels.selectAll"
                       :class="ui?.selectionControl"
                       class="akaza-data-table-selection-control"
+                      @pointerdown="activation.onPointerDown($event, event => { event.stopPropagation(); toggleAllFromControl(event) })"
                       @click.stop="toggleAllFromControl"
                     >
                   </template>
@@ -451,6 +454,7 @@ defineExpose({
                     :aria-label="sortLabel(header.column)"
                     :class="ui?.sortTrigger"
                     class="akaza-data-table-sort-trigger"
+                    @pointerdown="activation.onPointerDown($event, event => table.toggleSorting(header.column.id, event))"
                     @click="table.toggleSorting(header.column.id, $event)"
                   >
                     <slot name="header" v-bind="table.getHeaderContext(header)">
@@ -535,6 +539,7 @@ defineExpose({
               :data-akaza-disabled="row.disabled || undefined"
               :data-akaza-grabbed="rowGestures.grabbed(rowDomId(row)) || undefined"
               :data-akaza-drop-target="rowGestures.target(rowDomId(row)) || undefined"
+              @pointerdown="activation.onPointerDown($event, event => onRowClick(row, event))"
               @click="onRowClick(row, $event)"
               @contextmenu="onRowContextmenu(row, $event)"
             >
@@ -550,6 +555,7 @@ defineExpose({
                 :data-akaza-column-index="context.columnIndex"
                 :data-akaza-pinned="context.column.pinned || undefined"
                 :style="pinStyle(context.column)"
+                @pointerdown="activation.onPointerDown($event, event => { onCellClick(context, event); if (!event.cancelBubble) onRowClick(context.row, event) })"
                 @click="onCellClick(context, $event)"
               >
                 <div :class="ui?.cellContent" class="akaza-data-table-cell-content">
@@ -563,6 +569,7 @@ defineExpose({
                       :aria-label="labels.selectRow(context.row.index)"
                       :class="ui?.selectionControl"
                       class="akaza-data-table-selection-control"
+                      @pointerdown="activation.onPointerDown($event, event => { event.stopPropagation(); toggleRowFromControl(context.row, event) })"
                       @click.stop="toggleRowFromControl(context.row, $event)"
                     >
                     <button
@@ -574,6 +581,7 @@ defineExpose({
                       :aria-label="context.row.expanded ? labels.collapseRow(context.row.index) : labels.expandRow(context.row.index)"
                       :class="ui?.expansionTrigger"
                       class="akaza-data-table-expansion-trigger"
+                      @pointerdown="activation.onPointerDown($event, event => { event.stopPropagation(); table.toggleExpanded(context.row, event) })"
                       @click.stop="table.toggleExpanded(context.row, $event)"
                     >
                       <slot name="expansion-trigger" :row="context.row">{{ context.row.expanded ? "−" : "+" }}</slot>

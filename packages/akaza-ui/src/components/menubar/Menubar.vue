@@ -5,6 +5,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { MenuItem } from "../menu";
 import { isComposing } from "@ui-sdk/core";
 import { computed, nextTick, onUnmounted, provide, shallowReactive, shallowRef, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
@@ -260,6 +261,7 @@ watch(openValue, () => {
 onUnmounted(() => {
   disposed = true;
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -291,6 +293,7 @@ onUnmounted(() => {
       :data-akaza-disabled="disabled || Boolean(item.disabled) || undefined"
       :class="ui?.trigger"
       class="akaza-menubar-trigger"
+      @pointerdown="activation.onPointerDown($event, event => onTriggerClick(item, event))"
       @click="onTriggerClick(item, $event)"
       @keydown="onTriggerKeydown($event, item, index)"
       @mouseenter="openValue && item.children && openItem(item, 'hover', $event)"

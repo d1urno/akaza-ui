@@ -3,6 +3,7 @@ import type { ToggleGroupModel, ToggleGroupOption, ToggleGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, ref } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { useSelectionGroup } from "../../composables/internal/sdk/useSelectionGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
@@ -141,6 +142,7 @@ function handleKeydown(event: KeyboardEvent, index: number) {
   }
   roving.keydown(event, event.currentTarget as HTMLElement);
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -196,6 +198,7 @@ function handleKeydown(event: KeyboardEvent, index: number) {
       :data-akaza-disabled="isItemDisabled(option) || undefined"
       :class="ui?.item"
       class="akaza-toggle-group-item"
+      @pointerdown="activation.onPointerDown($event, event => select(option, event))"
       @click="select(option, $event)"
       @keydown="handleKeydown($event, index)"
       @focus="bridge.onFocus"

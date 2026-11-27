@@ -2,6 +2,7 @@
 import type { PaginationItem, PaginationProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed } from "vue";
+import { useActivation } from "../../composables/activation";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 const {
@@ -110,6 +111,7 @@ defineExpose({
   pageCount,
   previousPage: (event?: Event) => goToPage(currentPage.value - 1, "previous", event),
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -137,6 +139,7 @@ defineExpose({
           :class="ui?.first"
           class="akaza-pagination-first"
           :data-akaza-disabled="isControlDisabled(isFirstPage) || undefined"
+          @pointerdown="activation.onPointerDown($event, event => activate(1, 'first', event, isControlDisabled(isFirstPage)))"
           @click="activate(1, 'first', $event, isControlDisabled(isFirstPage))"
         >
           <slot name="first" :disabled="isControlDisabled(isFirstPage)">First</slot>
@@ -155,6 +158,7 @@ defineExpose({
           :class="ui?.previous"
           class="akaza-pagination-previous"
           :data-akaza-disabled="isControlDisabled(isFirstPage) || undefined"
+          @pointerdown="activation.onPointerDown($event, event => activate(currentPage - 1, 'previous', event, isControlDisabled(isFirstPage)))"
           @click="activate(currentPage - 1, 'previous', $event, isControlDisabled(isFirstPage))"
         >
           <slot name="previous" :disabled="isControlDisabled(isFirstPage)">Previous</slot>
@@ -184,6 +188,7 @@ defineExpose({
           :data-state="item.value === currentPage ? 'active' : 'inactive'"
           :data-akaza-page="item.value"
           :data-akaza-disabled="disabled || undefined"
+          @pointerdown="activation.onPointerDown($event, event => activate(item.value, 'page', event, disabled))"
           @click="activate(item.value, 'page', $event, disabled)"
         >
           <slot name="page" :page="item.value" :is-active="item.value === currentPage">
@@ -214,6 +219,7 @@ defineExpose({
           :class="ui?.next"
           class="akaza-pagination-next"
           :data-akaza-disabled="isControlDisabled(isLastPage) || undefined"
+          @pointerdown="activation.onPointerDown($event, event => activate(currentPage + 1, 'next', event, isControlDisabled(isLastPage)))"
           @click="activate(currentPage + 1, 'next', $event, isControlDisabled(isLastPage))"
         >
           <slot name="next" :disabled="isControlDisabled(isLastPage)">Next</slot>
@@ -232,6 +238,7 @@ defineExpose({
           :class="ui?.last"
           class="akaza-pagination-last"
           :data-akaza-disabled="isControlDisabled(isLastPage) || undefined"
+          @pointerdown="activation.onPointerDown($event, event => activate(pageCount, 'last', event, isControlDisabled(isLastPage)))"
           @click="activate(pageCount, 'last', $event, isControlDisabled(isLastPage))"
         >
           <slot name="last" :disabled="isControlDisabled(isLastPage)">Last</slot>

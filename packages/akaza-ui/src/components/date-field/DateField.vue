@@ -5,6 +5,7 @@ import type { CalendarDateValue, CalendarModelValue, CalendarProps } from "../ca
 import { getLocalTimeZone, toCalendarDate, today } from "@internationalized/date";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails as createDetails, resolveAction } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -434,6 +435,7 @@ defineExpose({
   setValue,
   toggleCalendar,
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -519,6 +521,7 @@ defineExpose({
       :data-akaza-state="calendarOpen ? 'open' : 'closed'"
       :data-akaza-disabled="isDisabled || undefined"
       class="akaza-date-field-calendar-trigger"
+      @pointerdown="activation.onPointerDown($event, event => toggleCalendar(event))"
       @click="toggleCalendar"
     >
       <slot

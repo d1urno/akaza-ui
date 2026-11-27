@@ -3,6 +3,7 @@ import type { SelectModelValue, SelectOption, SelectProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
 import { useListNavigation } from "../../composables/internal/sdk/useListNavigation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
@@ -528,6 +529,7 @@ watch(isDisabled, (value) => {
 onBeforeUnmount(() => {
   typeaheadFocusRequest++;
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -575,6 +577,7 @@ onBeforeUnmount(() => {
       :class="ui?.trigger"
       class="akaza-select-trigger"
       @blur="onFocusOut"
+      @pointerdown="activation.onPointerDown($event, event => setOpen(!openModel, 'trigger', event))"
       @click="setOpen(!openModel, 'trigger', $event)"
       @keydown="onTriggerKeydown"
     >
@@ -703,6 +706,7 @@ onBeforeUnmount(() => {
               :class="ui?.option"
               class="akaza-select-option"
               @mousedown.prevent
+              @pointerdown="activation.onPointerDown($event, event => selectOption(option, event))"
               @click="selectOption(option, $event)"
               @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
             >

@@ -3,6 +3,7 @@ import type { RadioGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, useTemplateRef } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
@@ -114,6 +115,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
     if (target !== undefined) select(target, event);
   }
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -176,6 +178,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
         :data-akaza-disabled="isItemDisabled(option) || undefined"
         :disabled="isItemDisabled(option)"
         class="akaza-radio-group-item"
+        @pointerdown="activation.onPointerDown($event, event => select(option, event))"
         @click="select(option, $event)"
         @keydown="handleKeyDown($event, index)"
       >

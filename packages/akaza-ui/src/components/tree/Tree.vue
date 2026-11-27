@@ -16,6 +16,7 @@ import type {
 } from ".";
 import { createFocusRecovery, createTreeCollection, isComposing, toggleTreeChecked } from "@ui-sdk/core";
 import { computed, nextTick, onBeforeUnmount, onUpdated, ref, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
 import { useCollectionVirtualizer } from "../../composables/internal/sdk/useCollectionVirtualizer";
 import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
@@ -572,6 +573,8 @@ function actionsFor(key: TreeKey): TreeNodeActions {
   };
 }
 
+const activation = useActivation();
+
 function togglePropsFor(node: TreeNode<T>): ButtonHTMLAttributes {
   const label = node.isExpanded
     ? props.labels?.collapse?.(node.item) ?? `Collapse ${node.label}`
@@ -582,6 +585,11 @@ function togglePropsFor(node: TreeNode<T>): ButtonHTMLAttributes {
     disabled: node.isDisabled,
     "aria-label": label,
     "aria-expanded": node.isExpanded,
+    onPointerdown: (event: PointerEvent) => activation.onPointerDown(event, (event) => {
+      event.stopPropagation();
+      toggleExpanded(node.key, event);
+      focusKey(node.key, event, false);
+    }),
     onClick: (event: MouseEvent) => {
       event.stopPropagation();
       toggleExpanded(node.key, event);
@@ -865,6 +873,7 @@ onBeforeUnmount(() => {
               :data-akaza-loading="row.data.isLoading || undefined"
               :data-akaza-depth="row.data.depth"
               :data-akaza-selection-highlight="props.selectionHighlight"
+              @pointerdown="activation.onPointerDown($event, event => onRowClick(row.data, event))"
               @click="onRowClick(row.data, $event)"
             >
               <span :class="props.ui?.indent" class="akaza-tree-indent" aria-hidden="true" />

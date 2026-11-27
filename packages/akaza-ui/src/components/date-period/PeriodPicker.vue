@@ -5,6 +5,7 @@ import type { CalendarDateRange, CalendarDateValue, CalendarModelValue, Calendar
 import { getLocalTimeZone, toCalendar, toCalendarDate, today } from "@internationalized/date";
 import { createFocusRecovery, isComposing } from "@ui-sdk/core";
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef } from "vue";
+import { useActivation } from "../../composables/activation";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 export interface PeriodPickerUi {
@@ -453,6 +454,7 @@ onBeforeUnmount(() => {
   itemRefs.forEach(binding => binding.dispose());
   itemRefs.clear();
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -477,6 +479,7 @@ onBeforeUnmount(() => {
         :disabled="previousDisabled"
         :class="[ui?.previous, partClass('previous')]"
         :data-akaza-disabled="previousDisabled || undefined"
+        @pointerdown="activation.onPointerDown($event, event => previousPage(event))"
         @click="previousPage($event)"
       >
         <slot name="previous" :disabled="previousDisabled">‹</slot>
@@ -490,6 +493,7 @@ onBeforeUnmount(() => {
         :disabled="nextDisabled"
         :class="[ui?.next, partClass('next')]"
         :data-akaza-disabled="nextDisabled || undefined"
+        @pointerdown="activation.onPointerDown($event, event => nextPage(event))"
         @click="nextPage($event)"
       >
         <slot name="next" :disabled="nextDisabled">›</slot>
@@ -538,6 +542,7 @@ onBeforeUnmount(() => {
             :data-akaza-range-end="item.rangeEnd || undefined"
             :data-akaza-in-range="item.inRange || undefined"
             :data-akaza-highlighted="item.highlighted || undefined"
+            @pointerdown="activation.onPointerDown($event, event => selectValue(item.date, event))"
             @click="selectValue(item.date, $event)"
             @focus="focusedValue = item.date.copy()"
             @pointerenter="hoveredValue = item.date.copy()"

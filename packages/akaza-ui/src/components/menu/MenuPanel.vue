@@ -2,6 +2,7 @@
 import type { MenuItem } from ".";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, ref, useId, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
@@ -254,6 +255,7 @@ function hasRootSlot(name: string): boolean {
 }
 
 defineExpose({ panelRef, getItems, highlightItem });
+const activation = useActivation();
 </script>
 
 <template>
@@ -316,6 +318,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
             :class="[ctx.ui?.item, ctx.ui?.checkboxItem]"
             class="akaza-menu-item akaza-menu-checkbox-item"
+            @pointerdown="activation.onPointerDown($event, event => ctx.onCheckboxSelect(item, event))"
             @click="ctx.onCheckboxSelect(item, $event)"
             @keydown="onItemKeydown($event, item, ctx.onCheckboxSelect)"
           >
@@ -342,6 +345,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
             :class="[ctx.ui?.item, ctx.ui?.radioItem]"
             class="akaza-menu-item akaza-menu-radio-item"
+            @pointerdown="activation.onPointerDown($event, event => ctx.onRadioSelect(item, event))"
             @click="ctx.onRadioSelect(item, $event)"
             @keydown="onItemKeydown($event, item, ctx.onRadioSelect)"
           >
@@ -378,6 +382,7 @@ defineExpose({ panelRef, getItems, highlightItem });
               :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
               :class="[ctx.ui?.item, ctx.ui?.submenuTrigger]"
               class="akaza-menu-item akaza-menu-submenu-trigger"
+              @pointerdown="activation.onPointerDown($event, () => openSubmenuAndFocus(item))"
               @click="openSubmenuAndFocus(item)"
               @keydown="onItemKeydown($event, item, openSubmenuAndFocus)"
             >
@@ -422,6 +427,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
             :class="ctx.ui?.item"
             class="akaza-menu-item"
+            @pointerdown="activation.onPointerDown($event, event => ctx.onItemSelect(item, event))"
             @click="ctx.onItemSelect(item, $event)"
             @keydown="onItemKeydown($event, item, ctx.onItemSelect)"
           >

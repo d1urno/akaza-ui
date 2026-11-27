@@ -16,6 +16,7 @@ import {
 } from "@internationalized/date";
 import { createFocusRecovery, isComposing } from "@ui-sdk/core";
 import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef } from "vue";
+import { useActivation } from "../../composables/activation";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 const {
@@ -434,6 +435,7 @@ onBeforeUnmount(() => {
   dayRefs.forEach(binding => binding.dispose());
   dayRefs.clear();
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -460,6 +462,7 @@ onBeforeUnmount(() => {
         :class="ui?.previous"
         :data-akaza-disabled="previousDisabled || undefined"
         class="akaza-calendar-previous"
+        @pointerdown="activation.onPointerDown($event, event => previousPage(event))"
         @click="previousPage($event)"
       >
         <slot name="previous" :disabled="previousDisabled">‹</slot>
@@ -474,6 +477,7 @@ onBeforeUnmount(() => {
         :class="ui?.next"
         :data-akaza-disabled="nextDisabled || undefined"
         class="akaza-calendar-next"
+        @pointerdown="activation.onPointerDown($event, event => nextPage(event))"
         @click="nextPage($event)"
       >
         <slot name="next" :disabled="nextDisabled">›</slot>
@@ -545,6 +549,7 @@ onBeforeUnmount(() => {
                 :data-akaza-in-range="day.inRange || undefined"
                 :data-akaza-highlighted="day.highlighted || undefined"
                 class="akaza-calendar-cell-trigger"
+                @pointerdown="activation.onPointerDown($event, event => selectDate(day.date, event))"
                 @click="selectDate(day.date, $event)"
                 @focus="focusedDate = day.date.copy()"
                 @pointerenter="hoveredDate = day.date.copy()"

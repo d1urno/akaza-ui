@@ -2,6 +2,7 @@
 import type { CollapsibleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { useId, useTemplateRef } from "vue";
+import { useActivation } from "../../composables/activation";
 import Panel from "../../composables/internal/sdk/Panel.vue";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 
@@ -38,6 +39,7 @@ function toggle(reasonOrEvent?: string | Event, event?: Event) {
 }
 
 defineExpose({ open, close, toggle });
+const activation = useActivation();
 </script>
 
 <template>
@@ -58,6 +60,7 @@ defineExpose({ open, close, toggle });
       :data-akaza-disabled="disabled || undefined"
       :disabled="disabled"
       class="akaza-collapsible-trigger"
+      @pointerdown="activation.onPointerDown($event, event => toggle('trigger', event))"
       @click="toggle('trigger', $event)"
     >
       <slot

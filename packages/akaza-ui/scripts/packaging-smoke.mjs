@@ -21,6 +21,7 @@ assert.deepEqual(manifest.exports, {
 });
 
 for (const file of [
+  "composables/activation/index",
   "composables/color/useColor",
   "composables/data-table/useDataTable",
   "composables/disclosure/useDisclosure",
@@ -48,13 +49,16 @@ const results = consumers.map(([format, load]) => {
     (async () => {
       const assert = (await import("node:assert/strict")).default;
       const { createRequire } = await import("node:module");
+      const { sep } = await import("node:path");
       const require = createRequire(process.cwd() + "/package.json");
       for (const name of ["window", "document", "HTMLElement", "Element", "Node", "MutationObserver", "ResizeObserver"]) {
         assert.equal(typeof globalThis[name], "undefined", name);
       }
       ${load}
       assert.equal(typeof nuxt, "function");
-      assert.ok(require.resolve("akaza-ui/dist/akaza-ui.css").endsWith("/dist/akaza-ui.css"));
+      assert.ok(require.resolve("akaza-ui/dist/akaza-ui.css").split(sep).join("/").endsWith("/dist/akaza-ui.css"));
+      assert.equal(typeof akaza.useActivation, "function");
+      assert.ok(akaza.AkazaConfigProvider);
       for (const entry of ["@ui-sdk/core", "@ui-sdk/core/dialog", "@ui-sdk/core/popover"]) {
         const cjs = require(entry);
         const esm = await import(entry);

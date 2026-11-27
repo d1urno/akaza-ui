@@ -62,6 +62,8 @@
     "test": "vitest run",
     "test:packaging": "node scripts/packaging-smoke.mjs",
     "test:browser": "playwright test --config playwright.config.ts",
+    "test:activation": "playwright test --config playwright.activation.config.ts",
+    "check:activation": "node scripts/check-activation.mjs",
     "test:browser:install": "playwright install chromium firefox webkit",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"
