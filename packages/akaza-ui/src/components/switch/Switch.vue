@@ -2,6 +2,7 @@
 import type { SwitchProps, SwitchValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, useId, useSlots, useTemplateRef } from "vue";
+import { useActivation } from "../../composables/activation";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
 
@@ -50,6 +51,7 @@ function toggle(reason = "click", event?: Event) {
   model.value = nextValue;
   bridge.onChange();
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -75,6 +77,7 @@ function toggle(reason = "click", event?: Event) {
       class="akaza-switch"
       @focus="bridge.onFocus"
       @blur="bridge.onBlur"
+      @pointerdown="activation.onPointerDown($event, event => toggle('click', event))"
       @click="toggle('click', $event)"
       @keydown.space.prevent="toggle('keyboard', $event)"
       @keydown.enter.prevent="toggle('keyboard', $event)"
@@ -109,6 +112,7 @@ function toggle(reason = "click", event?: Event) {
       v-if="hasLabel || hasDescription"
       :class="ui?.text"
       class="akaza-switch-text"
+      @pointerdown="activation.onPointerDown($event, event => !(event.target as HTMLElement).closest('a, button, input, select, textarea, [role=button]') && buttonRef?.click())"
       @click="!($event.target as HTMLElement).closest('a, button, input, select, textarea, [role=button]') && buttonRef?.click()"
     >
       <span

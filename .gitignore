@@ -9,3 +9,5 @@ coverage
 .nuxt
 .idea
 .vscode
+/packages/akaza-ui/test-results/
+/packages/akaza-ui/playwright-report/

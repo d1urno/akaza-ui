@@ -2,6 +2,7 @@
 import type { AccordionItem, AccordionProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import Panel from "../../composables/internal/sdk/Panel.vue";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
@@ -97,6 +98,7 @@ function onTriggerKeydown(event: KeyboardEvent) {
   if (event.target !== event.currentTarget) return;
   roving.keydown(event, event.currentTarget as HTMLElement);
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -126,6 +128,7 @@ function onTriggerKeydown(event: KeyboardEvent) {
           :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
           :data-akaza-disabled="isItemDisabled(item) ? '' : undefined"
           class="akaza-accordion-trigger"
+          @pointerdown="activation.onPointerDown($event, event => toggle(item, event))"
           @click="toggle(item, $event)"
           @keydown="onTriggerKeydown"
         >

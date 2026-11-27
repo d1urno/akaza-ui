@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ToggleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { useActivation } from "../../composables/activation";
 import { useButtonKeys } from "../../composables/internal/sdk/useButtonKeys";
 import { createChangeDetails } from "../../utils/changeEvent";
 
@@ -21,6 +22,7 @@ function toggle(event?: Event) {
   if (!changeEvent.canceled()) model.value = next;
 }
 
+const activation = useActivation();
 </script>
 
 <template>
@@ -37,6 +39,7 @@ function toggle(event?: Event) {
     :tabindex="as === 'button' ? undefined : disabled ? -1 : 0"
     :class="ui?.root"
     class="akaza-toggle"
+    @pointerdown="activation.onPointerDown($event, event => toggle(event))"
     @click="toggle($event)"
     @keydown="buttonKeys.keydown"
     @keyup="buttonKeys.keyup"

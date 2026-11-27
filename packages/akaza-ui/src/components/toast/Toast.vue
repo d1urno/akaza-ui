@@ -4,6 +4,7 @@ import type { ToastProps, ToastSwipeDirection } from ".";
 import type { ToastCloseReason, ToastItem } from "../../composables/toast";
 import { bindPersistentLayer, createFocusRecovery, matchesShortcut, supportsTopLayer } from "@ui-sdk/core";
 import { computed, onBeforeUnmount, onMounted, onUpdated, ref, shallowReactive, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 import { useToast } from "../../composables/toast";
 import { setToastPaused } from "../../composables/toast/pause";
@@ -385,6 +386,7 @@ onBeforeUnmount(() => {
   pauseReasons.clear();
   setToastPaused(toast, pauseReasons, false);
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -440,6 +442,7 @@ onBeforeUnmount(() => {
               :aria-disabled="pendingActions.has(item) || undefined"
               :class="ui?.action"
               class="akaza-toast-action"
+              @pointerdown="activation.onPointerDown($event, event => onAction(item, event))"
               @click="onAction(item, $event)"
             >
               {{ item.action.label }}
@@ -449,6 +452,7 @@ onBeforeUnmount(() => {
               :class="ui?.close"
               class="akaza-toast-close"
               :aria-label="closeLabel"
+              @pointerdown="activation.onPointerDown($event, () => close(item.id, 'close-button'))"
               @click="close(item.id, 'close-button')"
             >
               <slot name="close" :toast="item">×</slot>

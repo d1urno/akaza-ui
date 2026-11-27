@@ -4,6 +4,7 @@ import type { TagsInputProps, TagsInputValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing, keepFocus } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
@@ -369,6 +370,7 @@ onMounted(() => {
   if (autoFocus) nextTick(() => inputRef.value?.focus());
 });
 onUpdated(updateValidity);
+const activation = useActivation();
 </script>
 
 <template>
@@ -449,6 +451,7 @@ onUpdated(updateValidity);
           :aria-label="`Remove ${valueLabel(value)}`"
           :class="ui?.delete"
           class="akaza-tags-input-delete"
+          @pointerdown="activation.onPointerDown($event, event => removeTag(index, event))"
           @click="removeTag(index, $event)"
         >
           <slot name="delete" :value="value" :index="index">×</slot>
@@ -472,6 +475,7 @@ onUpdated(updateValidity);
       aria-label="Clear all tags"
       :class="ui?.clear"
       class="akaza-tags-input-clear"
+      @pointerdown="activation.onPointerDown($event, event => clear(event))"
       @click="clear($event)"
     >
       <slot name="clear">Clear</slot>

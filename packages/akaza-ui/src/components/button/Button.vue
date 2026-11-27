@@ -2,6 +2,7 @@
 import type { StyleValue } from "vue";
 import type { ButtonProps } from ".";
 import { computed, ref, useAttrs } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useButtonKeys } from "../../composables/internal/sdk/useButtonKeys";
 
 defineOptions({ inheritAttrs: false });
@@ -22,6 +23,7 @@ const autoLoading = ref(false);
 const isLoading = computed(() => loading || autoLoading.value);
 const isDisabled = computed(() => disabled || isLoading.value);
 const buttonKeys = useButtonKeys(() => isDisabled.value);
+const activation = useActivation();
 const rootStyle = computed(() => attrs.style as StyleValue);
 const rootAttrs = computed(() => {
   const {
@@ -43,7 +45,23 @@ type ClickHandler = (event: MouseEvent) => unknown;
 function callClickHandlers(handler: unknown, event: MouseEvent): unknown[] {
   if (!handler) return [];
   const handlers = Array.isArray(handler) ? handler : [handler];
-  return handlers.map((item) => (typeof item === "function" ? (item as ClickHandler)(event) : undefined));
+  const stopImmediatePropagation = event.stopImmediatePropagation;
+  let stopped = false;
+  // Manually invoked handlers need the same short-circuiting as Vue's native invoker.
+  event.stopImmediatePropagation = () => {
+    stopped = true;
+    stopImmediatePropagation.call(event);
+  };
+  try {
+    const results: unknown[] = [];
+    for (const item of handlers) {
+      if (stopped) break;
+      if (typeof item === "function") results.push((item as ClickHandler)(event));
+    }
+    return results;
+  } finally {
+    event.stopImmediatePropagation = stopImmediatePropagation;
+  }
 }
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
@@ -73,6 +91,15 @@ async function handleClick(event: MouseEvent) {
   }
 }
 
+function handlePress(event: PointerEvent) {
+  // Native capture/once/passive listeners must retain browser ordering and lifetime.
+  const nativeClickModifiers = Object.keys(attrs).some(key => /^onClick(?:Once|Capture|Passive)/.test(key));
+  return activation.onPointerDown(event, (event) => {
+    if (loadingAuto) return handleClick(event);
+    return Promise.all(callClickHandlers(attrs.onClick, event).filter(isPromiseLike));
+  }, isDisabled.value || nativeClickModifiers);
+}
+
 </script>
 
 <template>
@@ -92,6 +119,7 @@ async function handleClick(event: MouseEvent) {
     :style="rootStyle"
     class="akaza-button"
     @click.capture="handleClick"
+    @pointerdown="handlePress"
     @keydown="buttonKeys.keydown"
     @keyup="buttonKeys.keyup"
   >

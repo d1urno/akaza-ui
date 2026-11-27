@@ -4,6 +4,7 @@ import type { RatingProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -209,6 +210,7 @@ onMounted(() => {
   if (autoFocus) nextTick(() => focusValue(normalizedValue.value || values.value[0] || 0));
 });
 onUpdated(updateValidity);
+const activation = useActivation();
 </script>
 
 <template>
@@ -309,6 +311,7 @@ onUpdated(updateValidity);
         :data-akaza-highlighted="displayValue >= value || undefined"
         :data-akaza-value="value"
         :data-akaza-disabled="isDisabled || undefined"
+        @pointerdown="activation.onPointerDown($event, event => setValue(value, 'trigger', event))"
         @click="setValue(value, 'trigger', $event)"
         @keydown="onKeydown(value, $event)"
         @mouseenter="setHover(value, $event)"

@@ -4,6 +4,7 @@ import type { ListboxModelValue, ListboxOption, ListboxProps, ListboxValue } fro
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
 import { useCollectionVirtualizer } from "../../composables/internal/sdk/useCollectionVirtualizer";
 import { useListNavigation } from "../../composables/internal/sdk/useListNavigation";
@@ -449,6 +450,7 @@ onUpdated(() => {
   normalizeActiveIndex();
   updateValidity();
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -578,6 +580,7 @@ onUpdated(() => {
             :data-akaza-disabled="isItemDisabled(row.data) || undefined"
             :class="ui?.option"
             class="akaza-listbox-option"
+            @pointerdown="activation.onPointerDown($event, event => { listboxRef?.focus({ preventScroll: true }); selectOption(row.data, row.index, event) })"
             @click="selectOption(row.data, row.index, $event)"
             @mouseenter="highlightOnHover && !isItemDisabled(row.data) && setActive(row.index, 'pointer', $event)"
           >

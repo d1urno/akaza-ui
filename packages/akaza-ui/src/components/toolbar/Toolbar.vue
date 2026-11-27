@@ -2,6 +2,7 @@
 import type { ToolbarItem, ToolbarProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, useSlots } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
 
@@ -95,6 +96,7 @@ function onInput(item: ToolbarItem, event: Event) {
 function hasSlot(item: ToolbarItem): boolean {
   return Boolean(item.slot && slots[item.slot]);
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -142,6 +144,7 @@ function hasSlot(item: ToolbarItem): boolean {
           :data-akaza-disabled="isDisabled(child) || undefined"
           :class="ui?.button"
           class="akaza-toolbar-button"
+          @pointerdown="activation.onPointerDown($event, event => selectItem(child, event))"
           @click="selectItem(child, $event)"
         >
           <slot
@@ -185,6 +188,7 @@ function hasSlot(item: ToolbarItem): boolean {
         :tabindex="getTabindex(item, getItemKey(item, index))"
         :class="ui?.link"
         class="akaza-toolbar-link"
+        @pointerdown="activation.onPointerDown($event, event => selectItem(item, event))"
         @click="selectItem(item, $event)"
       >
         <slot
@@ -211,6 +215,7 @@ function hasSlot(item: ToolbarItem): boolean {
         :data-akaza-disabled="isDisabled(item) || undefined"
         :class="ui?.button"
         class="akaza-toolbar-button"
+        @pointerdown="activation.onPointerDown($event, event => selectItem(item, event))"
         @click="selectItem(item, $event)"
       >
         <slot

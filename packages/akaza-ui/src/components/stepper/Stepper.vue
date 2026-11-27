@@ -3,6 +3,7 @@ import type { StepperItem, StepperItemState, StepperProps, StepperValue } from "
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { nextEnabledIndex as nextPermittedIndex } from "../../utils/nextEnabledIndex";
@@ -189,6 +190,7 @@ function panelId(index: number): string {
 }
 
 defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
+const activation = useActivation();
 </script>
 
 <template>
@@ -233,6 +235,7 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
           :data-akaza-state="itemState(item, index)"
           :data-state="itemState(item, index)"
           :data-akaza-disabled="!canActivate(item, index) || undefined"
+          @pointerdown="activation.onPointerDown($event, event => goToIndex(index, 'trigger', event))"
           @click="goToIndex(index, 'trigger', $event)"
           @keydown="onKeydown(index, $event)"
         >
@@ -316,6 +319,7 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
         :disabled="isPrevDisabled"
         :class="ui?.previous"
         class="akaza-stepper-previous"
+        @pointerdown="activation.onPointerDown($event, event => prevStep(event))"
         @click="prevStep($event)"
       >
         <slot name="previous" :disabled="isPrevDisabled" :previous="prevStep">Previous</slot>
@@ -325,6 +329,7 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
         :disabled="isNextDisabled"
         :class="ui?.next"
         class="akaza-stepper-next"
+        @pointerdown="activation.onPointerDown($event, event => nextStep(event))"
         @click="nextStep($event)"
       >
         <slot name="next" :disabled="isNextDisabled" :next="nextStep">Next</slot>

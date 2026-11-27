@@ -4,6 +4,7 @@ import type { ComboboxModelValue, ComboboxOption, ComboboxProps, ComboboxValue }
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, onMounted, onUpdated, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
 import { useListNavigation } from "../../composables/internal/sdk/useListNavigation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
@@ -452,6 +453,7 @@ watch(openModel, (open) => {
 function hasOptionSlot(option: ComboboxOption) {
   return Boolean(slots[option.slot ?? "option"]);
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -503,6 +505,7 @@ function hasOptionSlot(option: ComboboxOption) {
             :aria-label="`Remove ${getLabel(option)}`"
             :class="ui?.remove"
             class="akaza-combobox-remove"
+            @pointerdown="activation.onPointerDown($event, event => removeValue(getValue(option), event))"
             @click="removeValue(getValue(option), $event)"
           >
             ×
@@ -544,6 +547,7 @@ function hasOptionSlot(option: ComboboxOption) {
       :class="ui?.clear"
       class="akaza-combobox-clear"
       aria-label="Clear selection"
+      @pointerdown="activation.onPointerDown($event, event => clearValue(event))"
       @click="clearValue($event)"
     >
       <slot name="clear">×</slot>
@@ -615,6 +619,7 @@ function hasOptionSlot(option: ComboboxOption) {
             :class="ui?.option"
             class="akaza-combobox-option"
             @mousedown.prevent
+            @pointerdown="activation.onPointerDown($event, event => selectOption(option, event))"
             @click="selectOption(option, $event)"
             @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
           >
@@ -655,6 +660,7 @@ function hasOptionSlot(option: ComboboxOption) {
           :class="ui?.create"
           class="akaza-combobox-create"
           @mousedown.prevent
+          @pointerdown="activation.onPointerDown($event, event => createOption(event))"
           @click="createOption($event)"
         >
           <slot name="create" :search="searchModel" :create="(event?: Event) => createOption(event)">

@@ -4,6 +4,7 @@ import type { TabsItem, TabsProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { computed, nextTick, onMounted, onUnmounted, ref, useId } from "vue";
+import { useActivation } from "../../composables/activation";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
 
@@ -129,6 +130,7 @@ function activate(item: TabsItem, event?: Event) {
   emit("value-change", item.value, changeEvent.details);
   if (!changeEvent.canceled()) model.value = item.value;
 }
+const activation = useActivation();
 </script>
 
 <template>
@@ -163,6 +165,7 @@ function activate(item: TabsItem, event?: Event) {
         :disabled="item.disabled"
         :class="ui?.tab"
         class="akaza-tab"
+        @pointerdown="activation.onPointerDown($event, event => activate(item, event))"
         @click="activate(item, $event)"
         @keydown="onTabKeydown"
       >

@@ -11,6 +11,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { isComposing } from "@ui-sdk/core";
 import { unrefElement, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, ref, shallowReactive, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
@@ -514,6 +515,7 @@ watch(openValue, async (value, previous) => {
   updateViewportSize();
 });
 
+const activation = useActivation();
 </script>
 
 <template>
@@ -591,6 +593,7 @@ watch(openValue, async (value, previous) => {
             :data-akaza-active="containsActiveItem(item) || undefined"
             :data-akaza-state="item.children?.length ? (openValue === getValue(item) ? 'open' : 'closed') : (isItemActive(item) ? 'active' : 'inactive')"
             :data-akaza-disabled="disabled || item.disabled || undefined"
+            @pointerdown="activation.onPointerDown($event, event => item.children ? onTriggerClick(item, event) : selectItem(item, event))"
             @click="item.children ? onTriggerClick(item, $event) : selectItem(item, $event)"
             @focus="onTriggerFocus($event, item)"
             @blur="onTriggerBlur($event, item)"
@@ -724,6 +727,7 @@ watch(openValue, async (value, previous) => {
                     :data-akaza-state="isItemActive(child) ? 'active' : 'inactive'"
                     data-akaza-navigation-menu-link
                     class="akaza-navigation-menu-content-link"
+                    @pointerdown="activation.onPointerDown($event, event => selectItem(child, event))"
                     @click="selectItem(child, $event)"
                   >
                     <SlotContent v-if="hasSlot(child, 'item')" :render="slots[child.slot ?? 'item']!" :scope="getSlotProps(child, 1)" />
@@ -759,6 +763,7 @@ watch(openValue, async (value, previous) => {
                         :data-akaza-state="isItemActive(nested) ? 'active' : 'inactive'"
                         data-akaza-navigation-menu-link
                         class="akaza-navigation-menu-content-link"
+                        @pointerdown="activation.onPointerDown($event, event => selectItem(nested, event))"
                         @click="selectItem(nested, $event)"
                       >
                         <SlotContent v-if="hasSlot(nested, 'item')" :render="slots[nested.slot ?? 'item']!" :scope="getSlotProps(nested, 2)" />

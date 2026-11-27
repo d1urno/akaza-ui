@@ -4,6 +4,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { Time, toTime } from "@internationalized/date";
 import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
+import { useActivation } from "../../composables/activation";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
@@ -393,6 +394,7 @@ defineExpose({
   focus: () => focusSegment(firstSegment.value),
   setValue,
 });
+const activation = useActivation();
 </script>
 
 <template>
@@ -438,6 +440,7 @@ defineExpose({
           :class="ui?.dayPeriod"
           :data-akaza-state="dayPeriod"
           class="akaza-time-field-day-period"
+          @pointerdown="activation.onPointerDown($event, event => toggleDayPeriod(event))"
           @click="toggleDayPeriod"
           @focus="onFocus('dayPeriod', $event)"
           @keydown="onDayPeriodKeydown"

@@ -2,6 +2,7 @@
 import type { NumberFieldProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { useActivation } from "../../composables/activation";
 import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { clampNumber, snapToStep } from "../../utils/number";
@@ -211,6 +212,7 @@ onMounted(() => {
   updateValidity(false);
 });
 onUpdated(updateValidity);
+const activation = useActivation();
 </script>
 
 <template>
@@ -239,6 +241,7 @@ onUpdated(updateValidity);
       v-bind="stateAttrs"
       class="akaza-number-field-decrement"
       aria-label="Decrement"
+      @pointerdown="activation.onPointerDown($event, event => stepBy(-1, 'decrement', event) && commitValue('decrement', event))"
       @click="stepBy(-1, 'decrement', $event) && commitValue('decrement', $event)"
     >
       <slot name="decrement" :value="model" :decrement="() => stepBy(-1, 'programmatic')">−</slot>
@@ -283,6 +286,7 @@ onUpdated(updateValidity);
       v-bind="stateAttrs"
       class="akaza-number-field-increment"
       aria-label="Increment"
+      @pointerdown="activation.onPointerDown($event, event => stepBy(1, 'increment', event) && commitValue('increment', event))"
       @click="stepBy(1, 'increment', $event) && commitValue('increment', $event)"
     >
       <slot name="increment" :value="model" :increment="() => stepBy(1, 'programmatic')">+</slot>

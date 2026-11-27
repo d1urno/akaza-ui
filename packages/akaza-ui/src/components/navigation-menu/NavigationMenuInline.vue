@@ -6,6 +6,7 @@ import type {
   NavigationMenuSlotProps,
   NavigationMenuUi,
 } from ".";
+import { useActivation } from "../../composables/activation";
 
 import SlotContent from "../../utils/SlotContent";
 import { getNavigationDestinationProps as getDestinationProps, getNavigationComponent as getLeafComponent, getNavigationValue as getValue, hasNavigationDestination as hasDestination } from "./items";
@@ -80,6 +81,7 @@ function hasPartSlot(name: string) {
   return Boolean(props.providedSlots[name]);
 }
 
+const activation = useActivation();
 </script>
 
 <template>
@@ -142,6 +144,7 @@ function hasPartSlot(name: string) {
           :data-akaza-state="item.children?.length ? (isExpanded(item) ? 'open' : 'closed') : (isActive(item) ? 'active' : 'inactive')"
           :data-akaza-disabled="disabled || item.disabled || undefined"
           data-akaza-navigation-menu-inline-control
+          @pointerdown="activation.onPointerDown($event, event => item.children?.length ? toggle(item, event) : emit('select', item, event))"
           @click="item.children?.length ? toggle(item, $event) : emit('select', item, $event)"
         >
           <SlotContent v-if="rowSlot(item)" :render="rowSlot(item)!" :scope="{ ...slotProps(item) }" />
