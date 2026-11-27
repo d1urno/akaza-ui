@@ -11,6 +11,8 @@ const removed = ref(false);
 const ancestorCount = ref(0);
 const saved = ref(0);
 const submitted = ref(0);
+const externalSubmitted = ref(0);
+const externalClicks = ref(0);
 const selected = ref<string[]>([]);
 const searchValue = ref("");
 const checked = ref(false);
@@ -24,10 +26,14 @@ const options = [{ label: "Vue", value: "vue" }, { label: "React", value: "react
 const menuItems = [{ label: "Run action", onSelect: () => { menuSelections.value++; } }];
 const tabs = [{ label: "First", value: "first" }, { label: "Second", value: "second" }];
 const ConsumerTrigger = defineComponent({
-  props: { toggle: { type: Function, required: true } },
+  props: {
+    toggle: { type: Function, required: true },
+    form: String,
+    label: { type: String, default: "Consumer trigger" },
+  },
   setup(props) {
     const activation = useActivation();
-    return () => h("button", { type: "button", ...activation.bindings(event => props.toggle(event)) }, "Consumer trigger");
+    return () => h("button", { type: props.form ? undefined : "button", form: props.form, ...activation.bindings(event => props.toggle(event)) }, props.label);
   },
 });
 
@@ -104,6 +110,12 @@ async function save() {
           :options="[{ label: 'First entry', value: 'first' }, { label: 'Second entry', value: 'second' }]"
         />
       </section>
+      <form id="external-form" @submit.prevent="externalSubmitted++">
+        <input aria-label="External required field" required>
+      </form>
+      <ConsumerTrigger form="external-form" label="External submit" :toggle="() => externalClicks++" />
+      <output data-testid="external-submitted">{{ externalSubmitted }}</output>
+      <output data-testid="external-clicks">{{ externalClicks }}</output>
     </main>
   </AkazaConfigProvider>
 </template>

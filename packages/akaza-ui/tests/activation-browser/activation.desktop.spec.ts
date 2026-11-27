@@ -152,7 +152,7 @@ test("combobox option presses retain selection and form/link defaults stay nativ
   const submit = page.getByRole("button", { name: "Submit", exact: true });
   await submit.click();
   await expect(page.getByTestId("submitted")).toHaveText("0");
-  await page.getByRole("textbox", { name: "Required" }).fill("Valid");
+  await page.getByRole("textbox", { name: "Required", exact: true }).fill("Valid");
   await down(page, submit);
   await expect(page.getByTestId("submitted")).toHaveText("0");
   await page.mouse.up();
@@ -161,6 +161,22 @@ test("combobox option presses retain selection and form/link defaults stay nativ
   await expect(page).not.toHaveURL(/#destination$/);
   await page.mouse.up();
   await expect(page).toHaveURL(/#destination$/);
+});
+
+test("externally associated buttons preserve validation and submit on release", async ({ page }) => {
+  const submit = page.getByRole("button", { name: "External submit", exact: true });
+  await down(page, submit);
+  await expect(page.getByTestId("external-clicks")).toHaveText("0");
+  await page.mouse.up();
+  await expect(page.getByTestId("external-clicks")).toHaveText("1");
+  await expect(page.getByTestId("external-submitted")).toHaveText("0");
+  await page.getByRole("textbox", { name: "External required field" }).fill("Valid");
+  await down(page, submit);
+  await expect(page.getByTestId("external-clicks")).toHaveText("1");
+  await expect(page.getByTestId("external-submitted")).toHaveText("0");
+  await page.mouse.up();
+  await expect(page.getByTestId("external-clicks")).toHaveText("2");
+  await expect(page.getByTestId("external-submitted")).toHaveText("1");
 });
 
 for (const name of ["Plain list", "Filterable list"]) {

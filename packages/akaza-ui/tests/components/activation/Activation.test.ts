@@ -115,6 +115,31 @@ describe("activation policy", () => {
     expect(action).toHaveBeenCalledOnce();
   });
 
+  it.each([undefined, "", "invalid", "submit", "reset", "button"])("respects the effective type of an externally associated button: %s", (type) => {
+    const action = vi.fn();
+    const submit = vi.fn((event: Event) => event.preventDefault());
+    const reset = vi.fn((event: Event) => event.preventDefault());
+    const Consumer = defineComponent({
+      setup() {
+        const activation = useActivation();
+        return () => h("div", [
+          h("form", { id: "external-form", onSubmit: submit, onReset: reset }),
+          h("button", { type, form: "external-form", ...activation.bindings(action) }, "Form action"),
+        ]);
+      },
+    });
+    const wrapper = mount(Consumer, { attachTo: document.body, global: pressConfig() });
+    const control = wrapper.get("button").element;
+    expect(pointer(control).defaultPrevented).toBe(type === "button");
+    expect(action).toHaveBeenCalledTimes(type === "button" ? 1 : 0);
+    expect(submit).not.toHaveBeenCalled();
+    expect(reset).not.toHaveBeenCalled();
+    release(control);
+    expect(action).toHaveBeenCalledOnce();
+    expect(submit).toHaveBeenCalledTimes(type === "button" || type === "reset" ? 0 : 1);
+    expect(reset).toHaveBeenCalledTimes(type === "reset" ? 1 : 0);
+  });
+
   it("tracks async loading when an action starts on press", async () => {
     let resolve!: () => void;
     const action = vi.fn(() => new Promise<void>(done => { resolve = done; }));

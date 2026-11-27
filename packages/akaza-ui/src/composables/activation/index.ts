@@ -90,8 +90,9 @@ export function useActivation() {
     if (!element?.matches || element.matches(":disabled, [aria-disabled=true], [aria-readonly=true], [readonly]")
       || element.closest("[inert]")) return;
     // Native navigation and form submission/reset need their browser click defaults.
+    const button = element.tagName === "BUTTON" ? element as HTMLButtonElement : null;
     if (element.matches("a[href], button[type=submit], button[type=reset], input[type=submit], input[type=reset], input[type=image]")
-      || (element.tagName === "BUTTON" && !element.hasAttribute("type") && element.closest("form"))) return;
+      || (button?.form && button.type === "submit")) return;
 
     const target = event.target as Element | null;
     const childControl = target?.closest?.(interactive);
