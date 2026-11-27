@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  AkazaConfigProvider, Button, Checkbox, Combobox, DataTable, Dialog, Menu,
+  AkazaConfigProvider, Button, Checkbox, Combobox, DataTable, Dialog, Listbox, Menu,
   NumberField, Popover, Select, Switch, Tabs, Toggle, useActivation,
 } from "akaza-ui";
 import { defineComponent, h, ref } from "vue";
@@ -95,6 +95,15 @@ async function save() {
       <div data-testid="scroll" style="height: 120px; overflow: auto; margin-top: 20px">
         <Button v-for="index in 20" :key="index" style="display: block; height: 45px" @click="count++">Scroll item {{ index }}</Button>
       </div>
+      <section>
+        <Listbox
+          v-for="filterable in [false, true]"
+          :key="String(filterable)"
+          :filterable="filterable"
+          :aria-label="filterable ? 'Filterable list' : 'Plain list'"
+          :options="[{ label: 'First entry', value: 'first' }, { label: 'Second entry', value: 'second' }]"
+        />
+      </section>
     </main>
   </AkazaConfigProvider>
 </template>

@@ -291,6 +291,25 @@ describe("activation policy", () => {
     expect(number.emitted("value-commit")).toHaveLength(1);
   });
 
+  it.each([false, true])("focuses Listbox options for subsequent keyboard navigation (filterable=%s)", async (filterable) => {
+    const previous = mount(Button, { attachTo: document.body });
+    const wrapper = mount(Listbox, {
+      attachTo: document.body, global: pressConfig(),
+      props: { options, filterable },
+    });
+    const startingControl = filterable ? wrapper.get("input[type=search]").element : previous.element;
+    (startingControl as HTMLElement).focus();
+    const first = wrapper.get('[role="option"]');
+    pointer(first.element);
+    expect(document.activeElement).toBe(wrapper.get('[role="listbox"]').element);
+    release(first.element);
+    expect(wrapper.emitted("value-change")).toHaveLength(1);
+    document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }));
+    document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true, cancelable: true }));
+    await nextTick();
+    expect(wrapper.emitted("value-change")?.map(args => args[0])).toEqual(["one", "two"]);
+  });
+
   it("opens Select and selects an option on press without toggling twice", async () => {
     const wrapper = mount(Select, {
       attachTo: document.body, global: pressConfig(),

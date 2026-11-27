@@ -121,6 +121,7 @@ test("combobox option presses retain selection and form/link defaults stay nativ
   await down(page, page.getByRole("option", { name: "Vue", exact: true }));
   await page.mouse.up();
   await expect(search).toHaveValue("Vue");
+  await expect(search).toBeFocused();
   const submit = page.getByRole("button", { name: "Submit", exact: true });
   await submit.click();
   await expect(page.getByTestId("submitted")).toHaveText("0");
@@ -134,3 +135,19 @@ test("combobox option presses retain selection and form/link defaults stay nativ
   await page.mouse.up();
   await expect(page).toHaveURL(/#destination$/);
 });
+
+for (const name of ["Plain list", "Filterable list"]) {
+  test(`${name} takes focus on option press and supports keyboard selection`, async ({ page }) => {
+    await page.getByRole("button", { name: "Count", exact: true }).focus();
+    const listbox = page.getByRole("listbox", { name, exact: true });
+    const first = listbox.getByRole("option", { name: "First entry", exact: true });
+    await down(page, first);
+    await expect(listbox).toBeFocused();
+    await expect(first).toHaveAttribute("aria-selected", "true");
+    await page.mouse.up();
+    await expect(first).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Space");
+    await expect(listbox.getByRole("option", { name: "Second entry", exact: true })).toHaveAttribute("aria-selected", "true");
+  });
+}

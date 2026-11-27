@@ -580,7 +580,7 @@ const activation = useActivation();
             :data-akaza-disabled="isItemDisabled(row.data) || undefined"
             :class="ui?.option"
             class="akaza-listbox-option"
-            @pointerdown="activation.onPointerDown($event, event => selectOption(row.data, row.index, event))"
+            @pointerdown="activation.onPointerDown($event, event => { listboxRef?.focus({ preventScroll: true }); selectOption(row.data, row.index, event) })"
             @click="selectOption(row.data, row.index, $event)"
             @mouseenter="highlightOnHover && !isItemDisabled(row.data) && setActive(row.index, 'pointer', $event)"
           >
