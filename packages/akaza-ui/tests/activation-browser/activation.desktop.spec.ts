@@ -94,6 +94,27 @@ test("teleported selection and popup triggers preserve state and focus", async (
   await expect(page.getByRole("button", { name: "Open dialog" })).toBeFocused();
 });
 
+test("native label clicks inside table cells retain checkbox activation", async ({ page }) => {
+  await page.getByRole("cell", { name: "Ada", exact: true }).evaluate((cell) => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    const text = document.createElement("span");
+    text.textContent = "Native cell checkbox";
+    text.style.display = "inline-block";
+    label.append(checkbox, text);
+    cell.append(label);
+  });
+  const checkbox = page.getByRole("checkbox", { name: "Native cell checkbox" });
+  for (const checked of [true, false]) {
+    await down(page, page.getByText("Native cell checkbox", { exact: true }));
+    await expect(checkbox).toBeChecked({ checked: !checked });
+    await page.mouse.up();
+    await expect(checkbox).toBeChecked({ checked });
+  }
+  await expect(page.locator(".akaza-data-table-row")).not.toHaveAttribute("data-akaza-selected", "true");
+});
+
 test("combobox option presses retain selection and form/link defaults stay native", async ({ page }) => {
   const search = page.getByRole("combobox", { name: "Search" });
   await search.fill("Vu");

@@ -262,6 +262,28 @@ describe("activation policy", () => {
     expect(wrapper.emitted("value-change")?.[0]?.[0]).toEqual(["vue"]);
   });
 
+  it.each(["wrapped", "for"])("preserves native %s label activation inside table cells", (association) => {
+    const inputId = `native-${association}`;
+    const wrapper = mount(DataTable<{ id: number; name: string }>, {
+      attachTo: document.body, global: pressConfig(),
+      props: { data: [{ id: 1, name: "Ada" }], columns: [{ accessor: "name" }], rowKey: "id", selectionMode: "multiple", selectionBehavior: "row" },
+      slots: { cell: () => {
+        const input = h("input", { id: inputId, type: "checkbox" });
+        const text = h("span", "Toggle native checkbox");
+        return association === "wrapped" ? h("label", [input, text]) : [input, h("label", { for: inputId }, text)];
+      } },
+    });
+    const target = wrapper.get("label span").element;
+    const input = wrapper.get("input[type=checkbox][id]").element as HTMLInputElement;
+    for (const checked of [true, false]) {
+      expect(pointer(target).defaultPrevented).toBe(false);
+      expect(input.checked).toBe(!checked);
+      expect(release(target).defaultPrevented).toBe(false);
+      expect(input.checked).toBe(checked);
+    }
+    expect(wrapper.emitted("selection-change")).toBeUndefined();
+  });
+
   it("preserves table cell and row actions, excluding nested controls", () => {
     const wrapper = mount(DataTable<{ id: number; name: string }>, {
       attachTo: document.body, global: pressConfig(),

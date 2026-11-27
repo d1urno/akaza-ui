@@ -10,7 +10,7 @@ type Action = (event: MouseEvent) => unknown;
 
 const pendingPresses = new WeakMap<Document, () => void>();
 const handledPresses = new WeakSet<Event>();
-const interactive = "button, a[href], input, select, textarea, [contenteditable]:not([contenteditable=false]), [role=button], [role=checkbox], [role=radio], [role=switch]";
+const interactive = "button, a[href], input, select, textarea, label, [contenteditable]:not([contenteditable=false]), [role=button], [role=checkbox], [role=radio], [role=switch]";
 
 /** Consume only the release click for this mouse sequence, including a retargeted click
  * after an action unmounts its control. Keyboard/programmatic clicks remain available.
