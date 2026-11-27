@@ -140,6 +140,50 @@ describe("activation policy", () => {
     expect(action).toHaveBeenCalledOnce();
   });
 
+  it.each([
+    { mode: "click", loadingAuto: false },
+    { mode: "click", loadingAuto: true },
+    { mode: "mouse-down", loadingAuto: false },
+    { mode: "mouse-down", loadingAuto: true },
+  ])("respects immediate propagation for merged handlers: %j", async ({ mode, loadingAuto }) => {
+    let resolve!: () => void;
+    const second = vi.fn();
+    const first = vi.fn((event: MouseEvent) => {
+      event.stopImmediatePropagation();
+      return new Promise<void>(done => { resolve = done; });
+    });
+    const wrapper = mount(Button, {
+      attachTo: document.body,
+      global: { provide: { [activationKey as symbol]: ref(mode) } },
+      props: { loadingAuto }, attrs: { onClick: [first, second] },
+    });
+    // Native events occur after listener attachment; avoid Vue's same-tick replay guard.
+    await new Promise(resolve => setTimeout(resolve, 1));
+    pointer(wrapper.element);
+    if (mode === "click") release(wrapper.element);
+    await nextTick();
+    expect(first).toHaveBeenCalledOnce();
+    expect(second).not.toHaveBeenCalled();
+    expect(wrapper.attributes("aria-busy")).toBe(loadingAuto ? "true" : undefined);
+    resolve();
+    await flushPromises();
+    expect(wrapper.attributes("aria-busy")).toBeUndefined();
+    if (mode === "mouse-down") release(wrapper.element);
+    expect(first).toHaveBeenCalledOnce();
+    expect(second).not.toHaveBeenCalled();
+  });
+
+  it("allows later merged handlers after ordinary stopPropagation", () => {
+    const second = vi.fn();
+    const wrapper = mount(Button, {
+      attachTo: document.body, global: pressConfig(),
+      attrs: { onClick: [(event: MouseEvent) => event.stopPropagation(), second] },
+    });
+    pointer(wrapper.element);
+    release(wrapper.element);
+    expect(second).toHaveBeenCalledOnce();
+  });
+
   it("does not suppress keyboard clicks while a mouse press is held", () => {
     const action = vi.fn();
     const wrapper = mount(Button, { attachTo: document.body, global: pressConfig(), attrs: { onClick: action } });

@@ -45,7 +45,23 @@ type ClickHandler = (event: MouseEvent) => unknown;
 function callClickHandlers(handler: unknown, event: MouseEvent): unknown[] {
   if (!handler) return [];
   const handlers = Array.isArray(handler) ? handler : [handler];
-  return handlers.map((item) => (typeof item === "function" ? (item as ClickHandler)(event) : undefined));
+  const stopImmediatePropagation = event.stopImmediatePropagation;
+  let stopped = false;
+  // Manually invoked handlers need the same short-circuiting as Vue's native invoker.
+  event.stopImmediatePropagation = () => {
+    stopped = true;
+    stopImmediatePropagation.call(event);
+  };
+  try {
+    const results: unknown[] = [];
+    for (const item of handlers) {
+      if (stopped) break;
+      if (typeof item === "function") results.push((item as ClickHandler)(event));
+    }
+    return results;
+  } finally {
+    event.stopImmediatePropagation = stopImmediatePropagation;
+  }
 }
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
