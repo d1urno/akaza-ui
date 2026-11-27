@@ -347,6 +347,38 @@ describe("activation policy", () => {
     expect(wrapper.emitted("selection-change")).toBeUndefined();
   });
 
+  it.each([
+    { tag: "summary", attrs: {} },
+    { tag: "div", attrs: { role: "tab" } },
+    { tag: "div", attrs: { role: "menuitemcheckbox" } },
+    { tag: "div", attrs: { tabindex: 0 } },
+  ])("preserves release clicks for nested controls: %j", ({ tag, attrs }) => {
+    const action = vi.fn();
+    const wrapper = mount(DataTable<{ id: number; name: string }>, {
+      attachTo: document.body, global: pressConfig(),
+      props: { data: [{ id: 1, name: "Ada" }], columns: [{ accessor: "name" }], rowKey: "id", selectionMode: "multiple", selectionBehavior: "row" },
+      slots: { cell: () => h(tag, { ...attrs, onClick: action }, h("span", { "data-testid": "nested-control" }, "Nested control")) },
+    });
+    const target = wrapper.get('[data-testid="nested-control"]').element;
+    expect(pointer(target).defaultPrevented).toBe(false);
+    expect(action).not.toHaveBeenCalled();
+    expect(release(target).defaultPrevented).toBe(false);
+    expect(action).toHaveBeenCalledOnce();
+    expect(wrapper.emitted("selection-change")).toBeUndefined();
+  });
+
+  it.each(["img", "presentation", "none"])("still activates a Button through decorative role=%s content", (role) => {
+    const action = vi.fn();
+    const wrapper = mount(Button, {
+      attachTo: document.body, global: pressConfig(), attrs: { onClick: action },
+      slots: { default: () => h("span", { role }, "Icon") },
+    });
+    pointer(wrapper.get("span").element);
+    expect(action).toHaveBeenCalledOnce();
+    release(wrapper.get("span").element);
+    expect(action).toHaveBeenCalledOnce();
+  });
+
   it("preserves table cell and row actions, excluding nested controls", () => {
     const wrapper = mount(DataTable<{ id: number; name: string }>, {
       attachTo: document.body, global: pressConfig(),

@@ -115,6 +115,33 @@ test("native label clicks inside table cells retain checkbox activation", async 
   await expect(page.locator(".akaza-data-table-row")).not.toHaveAttribute("data-akaza-selected", "true");
 });
 
+test("nested summary and ARIA controls retain their release clicks", async ({ page }) => {
+  await page.getByRole("cell", { name: "Ada", exact: true }).evaluate((cell) => {
+    const details = document.createElement("details");
+    details.id = "native-details";
+    const summary = document.createElement("summary");
+    summary.textContent = "Expand native details";
+    details.append(summary, document.createTextNode("Details content"));
+    const tab = document.createElement("div");
+    tab.setAttribute("role", "tab");
+    tab.tabIndex = 0;
+    tab.textContent = "Custom cell tab";
+    tab.addEventListener("click", () => { tab.dataset.clicks = String(Number(tab.dataset.clicks ?? 0) + 1); });
+    cell.append(details, tab);
+  });
+  await down(page, page.getByText("Expand native details", { exact: true }));
+  await expect(page.locator("#native-details")).not.toHaveAttribute("open");
+  await page.mouse.up();
+  await expect(page.locator("#native-details")).toHaveAttribute("open");
+  const tab = page.getByRole("tab", { name: "Custom cell tab", exact: true });
+  await down(page, tab);
+  await expect(tab).not.toHaveAttribute("data-clicks");
+  await expect(tab).toBeFocused();
+  await page.mouse.up();
+  await expect(tab).toHaveAttribute("data-clicks", "1");
+  await expect(page.locator(".akaza-data-table-row")).not.toHaveAttribute("data-akaza-selected", "true");
+});
+
 test("combobox option presses retain selection and form/link defaults stay native", async ({ page }) => {
   const search = page.getByRole("combobox", { name: "Search" });
   await search.fill("Vu");
